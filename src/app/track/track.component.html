@@ -1,0 +1,42 @@
+<div class="container-fluid   border-0">
+    <div class="row">
+       <div class="col-3">
+          </div>
+       <div class="col-6 border border-primary mt-5" style="width: 20rem;">
+           <div id="gitInputFormDiv" >
+               <div class="row card-body">
+                   <div >
+                       <label for="gitURL"  class="control-label pl-1 col-sm-2">Project ID</label>
+                       <input type="text"  class="col-sm-3 col-md-2"  id="gitURL" [(ngModel)]="gitURL">
+                       <label for="gitBranch" class="control-label  col-sm-2 ">GIT Branch</label>
+                       <input type="text" class="col-sm-3 col-md-2 mr-2"  id="gitBranch" [(ngModel)]="gitBranch"> 
+                       <input type="button"   value="Go"  class="btn btn-success  " (click)="getGitURLInfo()">
+                   </div>
+               </div>
+             </div>
+             
+             <div id="gitInfoDiv" >
+               <div class="row">
+                   <label class="control-label col-sm-offset-2 col-sm-2">Git Folder</label>
+                   <select  class="col-sm-6 col-md-4" (change) = "onSelectFolder($event)">
+                       <option value=""></option>
+                       <option  *ngFor="let folder of gitFolders" value="{{folder.path}}">{{folder.name}}</option>
+                   </select>
+               </div>
+               <div class="row">
+                   <br>
+               </div>
+               <div class="row">
+                       <label class="control-label col-sm-offset-2 col-sm-2">Git Files</label>
+                       <select class="col-sm-6 col-md-4" (change) = "onSelectFile($event)">
+                           <option value=""></option>
+                           <option *ngFor="let file of gitFiles" value="{{file.id}}">{{file.name}}</option>
+                       </select>
+                   </div>
+             </div>  
+             <div class="row">
+                <br>
+            </div>
+       </div>
+       <div class="col-2"></div>
+     </div></div>

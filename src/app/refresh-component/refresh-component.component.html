@@ -1,0 +1,105 @@
+<div class="container-fluid">
+    <div class="row">
+            <div class="container-fluid">
+                    <div class="row">
+                        <div class="  row col-sm-12">
+                            <input type='file' (change)="onSelectFile($event)">
+        
+                        </div>
+                    </div>
+                </div>
+        <div class="reglist" class="border  border-primary mt-5 column-left mr-5 p-3">
+            <div>
+                <h2>JSON information</h2>
+            </div>
+            <div class="flex-container">
+                <div class="table-wrapper-scroll-y my-custom-scrollbar">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>sqlScriptName</th>
+                                <th>directory</th>
+                                <th>credentialId</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let registration of sql.sqlScripts; let i = index">
+                                <th scope="row">{{ i + 1 }}</th>
+                                <td>{{ registration.sqlScriptName }}</td>
+                                <td>{{ registration.directory }}</td>
+                                <div class="scroll">
+                                    <p *ngFor="let registration of registration.credentials; let i = index">
+                                        <td>{{ registration.credentialId}}</td>
+                                    </p>
+                                </div>
+                                <td>
+                                    <button type="button" class="btn btn-info" (click)="onEdit(i)">Edit</button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger" (click)="onDelete(i)">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div>
+                <p></p>
+            </div>
+            <div class="text-right">
+                <button (click)="new()" class="btn btn-primary mr-5">New</button>
+                <button type="button" class="btn btn-success" (click)="submit()">Submit</button>
+            </div>
+        </div>
+
+
+        <div *ngIf="showNew" class="border  border-primary mt-8 column-left mr-5 p-3 ">
+            <form [formGroup]="myForm">
+                <div class="form-group row">
+                    <label class="col-4 col-form-label">SqlScriptName</label>
+                    <div class="form-group col-sm-6">
+                        <input formControlName="sqlScriptName" class="form-control mb-2" /><br>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-4 col-form-label">Directory</label>
+                    <div class="form-group col-sm-6">
+                        <input formControlName="directory" uppercase class="form-control mr-sm-2" />
+                        <img src="/assets/pluse.svg" width="24" height="24" (click)="addcredentialsArray()">
+                    </div>
+                </div>
+                <div formArrayName="credentials" class="form-group col-sm-11">
+                    <div *ngFor="let comp of credentialsArray.controls; let i=index;" [formGroupName]="i">
+                        <fieldset>
+                            <div class="form-group row">
+                                <label class="col-4 col-form-label">credentialId</label>
+                                <div class="form-group col-sm-7">
+                                    <input formControlName="credentialId" class="form-control" />
+                                    <img src="/assets/mus.svg" width="24" height="24" (click)="remove(i)">
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <button (click)="Save()" class="btn btn-success mr-5">Save</button>
+                    <button (click)="submit()" class="btn btn-danger">Download</button>
+                </div><br>
+
+            </form>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+</div>
