@@ -11,6 +11,9 @@ import { PasswordComponent } from './password/password.component';
 import { DdlComponent } from './ddl/ddl.component';
 import { RefreshComponentComponent } from './refresh-component/refresh-component.component';
 import { TrackService } from './track/track.service';
+import { ModalModule } from 'ngx-bootstrap/modal';
+import { UploadfilesComponent } from './uploadfiles/uploadfiles.component';
+import { UploadfilesService } from './uploadfiles/uploadfiles.service';
 
 @NgModule({
   declarations: [
@@ -21,6 +24,7 @@ import { TrackService } from './track/track.service';
     DdlComponent,
     RefreshComponentComponent,
     UppercaseDirective,
+    UploadfilesComponent,
     
   ],
   imports: [
@@ -28,10 +32,12 @@ import { TrackService } from './track/track.service';
     AppRoutingModule,
     FormsModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    ModalModule.forRoot() 
   ],
   providers: [
-    TrackService
+    TrackService,
+    UploadfilesService
   ],
   bootstrap: [AppComponent]
 })

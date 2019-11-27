@@ -1,0 +1,38 @@
+<!-- The Modal -->
+<ng-template #uploadFilesDialogue>
+
+    <div class="modal-header">
+        <h4 class="modal-title">Select files to upload</h4>
+    </div>
+
+    <div class="modal-body">
+        <div class="container">
+            <form [formGroup]="formGroup">
+                <div formArrayName="uploadFiles">
+                    <div *ngFor="let file of uploadFilesAry.controls; let i = index" [formGroupName]="i">
+                        <div class="row" style="padding-top: 3px;">
+                            <div class="col-10">
+                                <input type="file" name="uploadFile" formControlName="uploadFile"
+                                    class="form-control-file" (change)="onUpload($event, i)">
+                            </div>
+                            <div class="col-2">
+                                <img src="/assets/mus.svg" width="24" height="24" (click)="removeUpload(i)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="container" style="padding-top: 10px;">
+            <div *ngIf="message" [ngClass]="{'alert-success':isSuccess === true, 'alert-danger':isSuccess !== true}">
+                {{message}}</div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-danger" (click)="uploadFilesRef.hide()">Close</button>
+        <button type="button" class="btn btn-primary" (click)="addUploadFileControl()">Add File</button>
+        <button type="button" class="btn btn-primary" (click)="uploadFiles()">Upload Files</button>
+    </div>
+
+</ng-template>

@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { sqlScripts, Sql, Credentials } from 'src/app/new-track/Track';
 import { UpperCasePipe } from '@angular/common';
 import { SharedService } from '../shared/shared.service';
 import { TrackService } from '../track/track.service';
 import { CommitRequest, CommitResponse } from '../ddl/git.model';
+import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'app-password',
@@ -20,17 +21,22 @@ export class PasswordComponent implements OnInit {
   submitType: string = 'Save';
   saveType: string = 'Enter JSON inforamtion';
   selectedRow: number;
-  dataFromDll :Sql=new Sql();
+  dataFromDll: Sql = new Sql();
+
+  headerMsg: string;
+  message: string;
+  @ViewChild('modelDialogue', {static: false}) modelDialogue : TemplateRef<any>;
+  modalRef: BsModalRef;
 
   constructor(
     private shared: SharedService,
-    private trackService: TrackService
+    private trackService: TrackService,
+    private modalService: BsModalService
   ) {
     this.regModel = new sqlScripts;
     if (this.shared.getData()) {
-      this.dataFromDll =JSON.parse(this.shared.getData());
-      this.sqlScript.sqlScripts=this.dataFromDll.sqlScripts;
-
+      this.dataFromDll = JSON.parse(this.shared.getData());
+      this.sqlScript.sqlScripts = this.dataFromDll.sqlScripts;
     }
   }
 
@@ -93,8 +99,22 @@ export class PasswordComponent implements OnInit {
     const commitRequest: CommitRequest = this.shared.commitRequest;
     commitRequest.content = JSON.stringify(this.sqlScript, null, 2);
     this.trackService.commitFile(commitRequest).subscribe(
-      (data: CommitResponse) => {
-        console.log(data);
+      (data: any) => {
+        if (data && data.success) {
+          this.headerMsg = 'Success';
+          this.message = data.message;
+        } else {
+          this.headerMsg = 'Error';
+          this.message = data.message;
+        }
+      }, (error: any) => {
+        console.log(`Error while committing a file:${JSON.stringify(error)}`)
+        this.headerMsg = 'Error';
+        this.message = 'Error occurred while committing file changes !';
+      }, () => {
+        this.modalRef = this.modalService.show(this.modelDialogue, {
+          keyboard: false, class: 'modal-dialog-centered', ignoreBackdropClick: true
+        });
       }
     );
   }

@@ -8,7 +8,8 @@ export const environment = {
   endpointBaseUrl: 'http://localhost:8080',
 
   endpoints: {
-    'dllCommit': '/dll/commit'
+    'dllCommit': '/dll/commit',
+    'uploadfiles': '/uploadfiles'
   }
 };
 
