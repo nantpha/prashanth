@@ -1,6 +1,6 @@
 import { Component, OnInit, TemplateRef, ViewChild, AfterViewInit } from '@angular/core';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
+import { FormGroup, FormBuilder, FormArray, Validators } from '@angular/forms';
 import { UploadfilesService } from './uploadfiles.service';
 import { UploadFilesResponse } from './uploadfiles.model';
 
@@ -19,6 +19,7 @@ export class UploadfilesComponent implements OnInit, AfterViewInit {
   private selectedFiles: any[] = [];
   private message: string;
   private isSuccess: boolean;
+  private errorMap: any = {};
 
   constructor(
     private formBuilder: FormBuilder,
@@ -29,6 +30,10 @@ export class UploadfilesComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.formGroup = this.formBuilder.group({
+      projectId: ['', Validators.required],
+      branch: ['', Validators.required],
+      folderPath: [''],
+      commitMessage: ['', Validators.required],
       uploadFiles: this.formBuilder.array([
         this.formBuilder.group({ uploadFile: '' })
       ])
@@ -39,6 +44,10 @@ export class UploadfilesComponent implements OnInit, AfterViewInit {
     this.uploadFilesRef = this.modalService.show(this.modelDialogue, {
       keyboard: false, class: 'modal-dialog-centered gray modal-lg', ignoreBackdropClick: true
     });
+  }
+
+  get fields() {
+    return this.formGroup.controls;
   }
 
   get uploadFilesAry() {
@@ -61,7 +70,25 @@ export class UploadfilesComponent implements OnInit, AfterViewInit {
 
   uploadFiles(): void {
 
+    this.formGroup.updateValueAndValidity();
+
+    if (this.formGroup.invalid) {
+      Object.keys(this.fields).forEach(key => {
+        this.errorMap[key] = this.fields[key].invalid;
+      });
+      //return;
+    }
+
+    this.errorMap['uploadFiles'] = this.selectedFiles.length === 0;
+    if (this.errorMap['uploadFiles']) {
+      //return;
+    }
+
     const frmData: FormData = new FormData();
+    frmData.append("projectId", this.formGroup.get('projectId').value);
+    frmData.append("branch", this.formGroup.get('branch').value);
+    frmData.append("folderPath", this.formGroup.get('folderPath').value);
+    frmData.append("commitMessage", this.formGroup.get('commitMessage').value);
     this.selectedFiles.forEach(file => {
       if (file) {
         frmData.append('uploadFiles', file);

@@ -7,24 +7,52 @@
 
     <div class="modal-body">
         <div class="container">
-            <form [formGroup]="formGroup">
+            <form [formGroup]="formGroup" #form="ngForm">
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label>Project ID</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="Project ID"
+                            formControlName="projectId">
+                        <label *ngIf="errorMap.projectId" class="error-message">Project ID is required</label>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label>Branch</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="Branch"
+                            formControlName="branch">
+                        <label *ngIf="errorMap.branch" class="error-message">Branch is required</label>
+                    </div>
+                    <div class="form-group col-md-4"
+                        title="If you want to upload to specific folder in repository, Ex: folder1/folder2/.../folderN">
+                        <label>Folder Path <b>&#9432;</b></label>
+                        <input type="text" class="form-control form-control-sm" placeholder="Folder Path"
+                            formControlName="folderPath">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <label>Commit Message</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="Commit Message"
+                            formControlName="commitMessage">
+                        <label *ngIf="errorMap.commitMessage" class="error-message">Commit message is required</label>
+                    </div>
+                </div>
                 <div formArrayName="uploadFiles">
-                    <div *ngFor="let file of uploadFilesAry.controls; let i = index" [formGroupName]="i">
-                        <div class="row" style="padding-top: 3px;">
-                            <div class="col-10">
-                                <input type="file" name="uploadFile" formControlName="uploadFile"
-                                    class="form-control-file" (change)="onUpload($event, i)">
-                            </div>
-                            <div class="col-2">
-                                <img src="/assets/mus.svg" width="24" height="24" (click)="removeUpload(i)">
-                            </div>
+                    <div class="row" style="padding-top: 3px;"
+                        *ngFor="let file of uploadFilesAry.controls; let i = index" [formGroupName]="i">
+                        <div class="col-10">
+                            <input type="file" name="uploadFile" formControlName="uploadFile" class="form-control-file"
+                                (change)="onUpload($event, i)">
+                        </div>
+                        <div class="col-2">
+                            <img src="/assets/mus.svg" width="24" height="24" (click)="removeUpload(i)">
                         </div>
                     </div>
+                    <label *ngIf="errorMap.uploadFiles" class="error-message">Select atleast one file to upload</label>
                 </div>
             </form>
         </div>
         <div class="container" style="padding-top: 10px;">
-            <div *ngIf="message" [ngClass]="{'alert-success':isSuccess === true, 'alert-danger':isSuccess !== true}">
+            <div *ngIf="message" style="padding: 2px; padding-left: 5px;" [ngClass]="{'alert-success':isSuccess === true, 'alert-danger':isSuccess !== true}">
                 {{message}}</div>
         </div>
     </div>
