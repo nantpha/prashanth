@@ -1,126 +1,53 @@
-import { Component, OnInit } from '@angular/core';
-import { sqlScripts, Sql } from './ddl';
-import { SharedService } from '../shared/shared.service';
-@Component({
-  selector: 'app-ddl',
-  templateUrl: './ddl.component.html',
-  styleUrls: ['./ddl.component.css']
-})
-export class DdlComponent implements OnInit {
+<div class="container">
+  <mat-toolbar color="primary" class="main-toolbar">
+      <span>Personal Radio</span>
+  </mat-toolbar>
+  <div class="content">
+      <div class="logo">
+        <img src="assets/image1.jpg" alt="Shibaji Debnath" width="260px">
+    </div>
+    <mat-list color="primary">
+      <h3 mat-subheader="">Playlist</h3>
+      <div class="song-list">
+        <mat-list-item *ngfor="let file of files; let i = index" (click)="openFile(file, i)">
+          <mat-icon color="primary" mat-list-icon="">music_note</mat-icon>
+          <h4 mat-line="">{{ file.name }}</h4>
+          <h5 mat-line="">by {{ file.artist }}</h5>
+          <mat-icon color="primary" *ngif="currentFile.index === i &amp;&amp; !state?.error">volume_up</mat-icon>
+          <h6 *ngif="currentFile.index === i &amp;&amp; state?.error">ERROR</h6>
+          <mat-divider></mat-divider>
+        </mat-list-item>
+      </div>
+    </mat-list>
+  </div>
+  <div class="spacer"></div>
+  <div class="media-footer">
+    <mat-toolbar color="primary">
+      <mat-toolbar-row>
+         {{ state?.readableCurrentTime }}
+         <mat-slider class="time-slider" min="0" [max]="state?.duration" step="1" [value]="state?.currentTime" (input)="onSliderChangeEnd($event)" [disabled]="state?.error || currentFile.index === undefined"></mat-slider>
+         {{ state?.readableDuration }}
+      </mat-toolbar-row>
+      <mat-toolbar-row cols="2" class="media-action-bar">
 
-  sqlScripts:sqlScripts =new sqlScripts();
-sqlScript:Sql=new Sql();  
-  regModel: sqlScripts;
-  showNew: Boolean = false;
-  submitType: string = 'Save';
-  saveType:string='Enter JSON inforamtion';
-  selectedRow: number;
-  dataFromDll:sqlScripts;
-  constructor(private shared:SharedService) {
-    this.regModel = new sqlScripts;
-    this.dataFromDll = this.shared.getData();
-    if(this.dataFromDll){
-      console.log(this.dataFromDll);
-    
-  }
-  }
-  ngOnInit() {}
+          <button mat-button="" [disabled]="isFirstPlaying()" (click)="previous()">
+            <mat-icon mat-list-icon="">skip_previous</mat-icon>
+          </button>
+          <button mat-button="" (click)="play()" [disabled]="state?.error" *ngif="!state?.playing">
+            <mat-icon mat-list-icon="">play_circle_filled</mat-icon>
+          </button>
+          <button mat-button="" (click)="pause()" *ngif="state?.playing">
+            <mat-icon mat-list-icon="">pause</mat-icon>
+          </button>
+          <button mat-button="" [disabled]="isLastPlaying()" (click)="next()">
+            <mat-icon mat-list-icon="">skip_next</mat-icon>
+          </button>
 
-  onNew() {
-    this.sqlScripts = new sqlScripts();
-    this.submitType = 'Save';
-    this.showNew = true;
-  }
-
-  onSelectFile(event) {
-    var file = event.target.files[0];
-    let reader = new FileReader();
-    reader.onload = evnt => {
-      const contentFromFile: any = JSON.parse(reader.result as string);
-      console.log(contentFromFile);
-      this.sqlScript.sqlScripts.push(...contentFromFile.sqlScripts);
-    }
-    reader.readAsText(file);
-   // this.sho=false;
-
-   }  
-
-  // This method associate to Save Button.
-  onSave() {
-    if (this.submitType == 'Save') {
-    // this.track.credentials.push(this.credentials);
-    this.sqlScript.sqlScripts.push(this.sqlScripts);
-    this.sqlScripts=new sqlScripts();
-		console.log(this.sqlScript);
-    } else {
-      this.sqlScript.sqlScripts[this.selectedRow].sqlScriptName = this.sqlScripts.sqlScriptName;
-      this.sqlScript.sqlScripts[this.selectedRow].directory = this.sqlScripts.directory;
-    }
-    this.showNew = false;
-  }
-
-  onEdit(index: number) {
-    this.selectedRow = index;
-    this.sqlScripts = Object.assign({}, this.sqlScript.sqlScripts[this.selectedRow]);
-    this.submitType = 'Update';
-	  this.saveType = 'Update JSON information';
-    this.showNew = true;
-  }
-
-  onDelete(index: number) {
-    this.sqlScript.sqlScripts.splice(index, 1);
-  }
-
-  onCancel() {
-    this.showNew = false;
-  }
-
-  submit(){
-    this.download(JSON.stringify(this.sqlScript,null,2),"myjson.json","text/plain")
-  } 
-
-  download(strData, strFileName, strMimeType) {
-    var D = document,
-        A = arguments,
-        a = D.createElement("a"),
-        d = A[0],
-        n = A[1],
-        t = A[2] || "text/plain";
-
-    //build download link:
-    a.href = "data:" + strMimeType + "charset=utf-8," + escape(strData);
-
-
-    if ((window as any).MSBlobBuilder) { // IE10
-        var bb = new MSBlobBuilder();
-        bb.append(strData);
-        return navigator.msSaveBlob(bb, strFileName);
-    } /* end if(window.MSBlobBuilder) */
-
-
-
-    if ('download' in a) { //FF20, CH19
-        a.setAttribute("download", n);
-        a.innerHTML = "downloading...";
-        D.body.appendChild(a);
-        setTimeout(function() {
-            var e = D.createEvent("MouseEvents");
-            e.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-            a.dispatchEvent(e);
-            D.body.removeChild(a);
-        }, 66);
-        return true;
-    }; /* end if('download' in a) */
-
-
-
-    //do iframe dataURL download: (older W3)
-    var f = D.createElement("iframe");
-    D.body.appendChild(f);
-    f.src = "data:" + (A[2] ? A[2] : "application/octet-stream") + (window.btoa ? ";base64" : "") + "," + (window.btoa ? window.btoa : escape)(strData);
-    setTimeout(function() {
-        D.body.removeChild(f);
-    }, 333);
-    return true;
-}
-}
+        <span class="spacer"></span>
+        <mat-icon>volume_up</mat-icon>
+        <mat-slider class="time-slider" min="0" max="1" step="0.01" [value]="state?.volume" (input)="onVolumeChange($event)"></mat-slider>
+       
+      </mat-toolbar-row>
+    </mat-toolbar>
+  </div>
+</div>
