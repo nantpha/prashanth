@@ -1,150 +1,32 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
-import * as moment from "moment";
-import { StreamState } from '../interfaces/stream-state';
+import { of } from "rxjs";
 
 @Injectable({
   providedIn: 'root'
 })
-export class AudioService {
-  private state: StreamState = {
-    playing: false,
-    readableCurrentTime: '',
-    readableDuration: '',
-    duration: undefined,
-    currentTime: undefined,
-    volume: 0.5,
-    canplay: false,
-    error: false,
-  };
-  private stop$ = new Subject();
-  private audioObj = new Audio();
-  audioEvents = [
-    "ended",
-    "error",
-    "play",
-    "playing",
-    "pause",
-    "timeupdate",
-    "canplay",
-    "loadedmetadata",
-    "loadstart"
-  ];
-  private stateChange: BehaviorSubject<streamstate> = new BehaviorSubject(
-    this.state
-  );
-
-  constructor() {
-  }
-
-  private updateStateEvents(event: Event): void {
-    switch (event.type) {
-      case "canplay":
-        this.state.duration = this.audioObj.duration;
-        this.state.readableDuration = this.formatTime(this.state.duration);
-        this.state.canplay = true;
-        break;
-      case "playing":
-        this.state.playing = true;
-        break;
-      case "pause":
-        this.state.playing = false;
-        break;
-      case "timeupdate":
-        this.state.currentTime = this.audioObj.currentTime;
-        this.state.readableCurrentTime = this.formatTime(
-          this.state.currentTime
-        );
-        break;
-      case "error":
-        this.resetState();
-        this.state.error = true;
-        break;
+export class CloudService {
+  files: any = [
+    // tslint:disable-next-line: max-line-length
+    {
+      url:"https://s3-us-west-2.amazonaws.com/anchor-audio-bank/staging/2020-02-19/d658d0c51440a105d3b5708ec5cbfea1.m4a",
+      name: "How to improve yourself",
+      artist: "Shibaji Debnath"
+    },
+    {
+      url:"https://s3-us-west-2.amazonaws.com/anchor-audio-bank/staging/2020-03-05/6295d331c4f0a5a77c54c391ee76aabf.m4a",
+      name:"You will be successfull. If you ask yourself 'Why'",
+      artist: "Shibaji Debnath",
+    },
+    {
+      url:"https://s3-us-west-2.amazonaws.com/anchor-audio-bank/staging/2020-02-03/648e6a1cf78f0005ab9b127bd81e6bfc.m4a",
+      name: "Build your career as you think. Question youself 'How'",
+      artist: "Shibaji Debnath"
     }
-    this.stateChange.next(this.state);
-  }
+  ];
 
-  private resetState() {
-    this.state = {
-      playing: false,
-      readableCurrentTime: '',
-      readableDuration: '',
-      duration: undefined,
-      currentTime: undefined,
-      volume: 0.5,
-      canplay: false,
-      error: false
-    };
-  }
+  constructor() { }
 
-  getState(): Observable<streamstate> {
-    return this.stateChange.asObservable();
-  }
-  
-  private streamObservable(url) {
-    return new Observable(observer =&gt; {
-      // Play audio
-      this.audioObj.src = url;
-      this.audioObj.load();
-      this.audioObj.play();
-
-      const handler = (event: Event) =&gt; {
-        this.updateStateEvents(event);
-        observer.next(event);
-      };
-
-      this.addEvents(this.audioObj, this.audioEvents, handler);
-      return () =&gt; {
-        // Stop Playing
-        this.audioObj.pause();
-        this.audioObj.currentTime = 0;
-        // remove event listeners
-        this.removeEvents(this.audioObj, this.audioEvents, handler);
-        // reset state
-        this.resetState();
-      };
-    });
-  }
-
-  private addEvents(obj, events, handler) {
-    events.forEach(event =&gt; {
-      obj.addEventListener(event, handler);
-    });
-  }
-
-  private removeEvents(obj, events, handler) {
-    events.forEach(event =&gt; {
-      obj.removeEventListener(event, handler);
-    });
-  }
-
-  playStream(url) {
-    return this.streamObservable(url).pipe(takeUntil(this.stop$));
-  }
-
-  play() {
-    this.audioObj.play();
-  }
-
-  pause() {
-    this.audioObj.pause();
-  }
-
-  stop() {
-    this.stop$.next();
-  }
-
-  seekTo(seconds) {
-    this.audioObj.currentTime = seconds;
-  }
-
-  setVolume(volume) {
-    this.audioObj.volume = volume;
-  }
-
-  formatTime(time: number, format: string = "HH:mm:ss") {
-    const momentTime = time * 1000;
-    return moment.utc(momentTime).format(format);
+  getFiles() {
+    return of(this.files);
   }
 }
