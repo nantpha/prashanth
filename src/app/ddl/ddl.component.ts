@@ -1,59 +1,150 @@
-.container {
-    .main-toolbar {
-      justify-content: center;
-      .spacer {
-        flex: 1 1 auto;
-      }
-      .toolbar-btn {
-        font-size: 16px;
-        margin-right: 5px;
-        cursor: pointer;
-      }
+import { Injectable } from '@angular/core';
+import { Observable, BehaviorSubject, Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
+import * as moment from "moment";
+import { StreamState } from '../interfaces/stream-state';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AudioService {
+  private state: StreamState = {
+    playing: false,
+    readableCurrentTime: '',
+    readableDuration: '',
+    duration: undefined,
+    currentTime: undefined,
+    volume: 0.5,
+    canplay: false,
+    error: false,
+  };
+  private stop$ = new Subject();
+  private audioObj = new Audio();
+  audioEvents = [
+    "ended",
+    "error",
+    "play",
+    "playing",
+    "pause",
+    "timeupdate",
+    "canplay",
+    "loadedmetadata",
+    "loadstart"
+  ];
+  private stateChange: BehaviorSubject<streamstate> = new BehaviorSubject(
+    this.state
+  );
+
+  constructor() {
+  }
+
+  private updateStateEvents(event: Event): void {
+    switch (event.type) {
+      case "canplay":
+        this.state.duration = this.audioObj.duration;
+        this.state.readableDuration = this.formatTime(this.state.duration);
+        this.state.canplay = true;
+        break;
+      case "playing":
+        this.state.playing = true;
+        break;
+      case "pause":
+        this.state.playing = false;
+        break;
+      case "timeupdate":
+        this.state.currentTime = this.audioObj.currentTime;
+        this.state.readableCurrentTime = this.formatTime(
+          this.state.currentTime
+        );
+        break;
+      case "error":
+        this.resetState();
+        this.state.error = true;
+        break;
     }
+    this.stateChange.next(this.state);
+  }
+
+  private resetState() {
+    this.state = {
+      playing: false,
+      readableCurrentTime: '',
+      readableDuration: '',
+      duration: undefined,
+      currentTime: undefined,
+      volume: 0.5,
+      canplay: false,
+      error: false
+    };
+  }
+
+  getState(): Observable<streamstate> {
+    return this.stateChange.asObservable();
+  }
   
-    .content {
-      .logo {
-        margin: 0.5rem;
-        text-align: center;
-        font-size: 24px;
-        color: #0471d6;
-        img{
-          background-color: #0471d6;
-          padding: .5rem;
-        }
-        .mat-icon {
-          height: 160px !important;
-          width: 160px !important;
-          font-size: 160px !important;
-        }
-      }
-      .song-list{
-        height: 200px;
-        overflow: scroll;
-      }
-    }
-  
-    .media-footer {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      .spacer {
-        width: 200%;
-      }
-      .time-slider {
-        width: 100% !important;
-        margin-left: 20px;
-        margin-right: 20px;
-      }
-      .media-action-bar {
-        width: 100%;
-        padding: 2.5rem;
-        justify-content: center;
-        .mat-icon {
-          height: 48px !important;
-          width: 48px !important;
-          font-size: 48px !important;
-        }
-      }
-   }
+  private streamObservable(url) {
+    return new Observable(observer =&gt; {
+      // Play audio
+      this.audioObj.src = url;
+      this.audioObj.load();
+      this.audioObj.play();
+
+      const handler = (event: Event) =&gt; {
+        this.updateStateEvents(event);
+        observer.next(event);
+      };
+
+      this.addEvents(this.audioObj, this.audioEvents, handler);
+      return () =&gt; {
+        // Stop Playing
+        this.audioObj.pause();
+        this.audioObj.currentTime = 0;
+        // remove event listeners
+        this.removeEvents(this.audioObj, this.audioEvents, handler);
+        // reset state
+        this.resetState();
+      };
+    });
+  }
+
+  private addEvents(obj, events, handler) {
+    events.forEach(event =&gt; {
+      obj.addEventListener(event, handler);
+    });
+  }
+
+  private removeEvents(obj, events, handler) {
+    events.forEach(event =&gt; {
+      obj.removeEventListener(event, handler);
+    });
+  }
+
+  playStream(url) {
+    return this.streamObservable(url).pipe(takeUntil(this.stop$));
+  }
+
+  play() {
+    this.audioObj.play();
+  }
+
+  pause() {
+    this.audioObj.pause();
+  }
+
+  stop() {
+    this.stop$.next();
+  }
+
+  seekTo(seconds) {
+    this.audioObj.currentTime = seconds;
+  }
+
+  setVolume(volume) {
+    this.audioObj.volume = volume;
+  }
+
+  formatTime(time: number, format: string = "HH:mm:ss") {
+    const momentTime = time * 1000;
+    return moment.utc(momentTime).format(format);
+  }
 }
